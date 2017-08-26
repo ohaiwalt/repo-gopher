@@ -53,7 +53,7 @@ There is a special key, `mappings`, that accepts an array of existing labels tha
 Running
 --------
 
-Repo Gopher expects you to have the environment variable `GITHUB_API_TOKEN` set. To get a GitHub API token, go [here](https://github.com/settings/tokens).
+Repo Gopher expects you to have the environment variable `GITHUB_AUTH_TOKEN` set. To get a GitHub API token, go [here](https://github.com/settings/tokens).
 
 
 To apply a config file to a repository, run
@@ -63,5 +63,5 @@ repo-gopher -c config.toml
 
 To run using the provided Dockerfile, run
 ```
-docker run -v /local/path/to/config.toml:/etc/repo-gopher/config.toml -e GITHUB_API_TOKEN=$GITHUB_API_TOKEN ohaiwalt/repo-gopher
+docker run -v /local/path/to/config.toml:/etc/repo-gopher/config.toml -e GITHUB_AUTH_TOKEN=$GITHUB_AUTH_TOKEN ohaiwalt/repo-gopher
 ```
