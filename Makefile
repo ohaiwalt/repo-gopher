@@ -22,7 +22,7 @@ deps:
 	dep ensure
 
 test: deps
-	go test +local -cover
+	go test -cover
 
 binary: clean-dev | $(BUILD_DIR)
 	CGO_ENABLED=0 go build -ldflags "$(LINK_VARS)" -o $(BUILD_DIR)/$(BINARY)

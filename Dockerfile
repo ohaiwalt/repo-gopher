@@ -15,7 +15,7 @@ RUN apk -U add --virtual .build_deps \
     && go get -u github.com/golang/dep/cmd/dep \
     && dep ensure \
 
-    && make bin \
+    && make binary \
 
     && mv _build/repo-gopher /usr/local/bin \
 

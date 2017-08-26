@@ -41,7 +41,7 @@ func main() {
 	// Load config file
 	tomlData, err := ioutil.ReadFile(*configFile)
 	if err != nil {
-		fmt.Println("Unable to load config file.")
+		fmt.Printf("Unable to load config file: %s\n", *configFile)
 		os.Exit(1)
 	}
 
