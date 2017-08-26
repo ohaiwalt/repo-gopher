@@ -6,14 +6,14 @@ BUILD_HASH        := $(shell git rev-parse HEAD)
 BUILD_TAG         ?= $(shell scripts/build_tag.sh)
 DOCKER_IMAGE      ?= "ohaiwalt/repo-gopher:$(BUILD_TAG)"
 LINK_VARS         := -X main.buildstamp=$(BUILD_STAMP) -X main.buildhash=$(BUILD_HASH)
-LINK_VARS         += -X main.buildtag=$(BUILD_TAG) -X main.commanddrivertag=$(DRIVER_TAG)
+LINK_VARS         += -X main.buildtag=$(BUILD_TAG)
 BUILD_DIR          = _build
 BINARY             = repo-gopher
 
 ifdef FORCE
-.PHONY: all tools lint test clean deps relay docker
+.PHONY: all test clean deps docker
 else
-.PHONY: all tools lint test clean deps docker
+.PHONY: all test clean deps docker
 endif
 
 all: test binary
@@ -21,20 +21,11 @@ all: test binary
 deps:
 	dep ensure
 
-vet:
-	govendor vet -x +local
-
 test: deps
 	go test +local -cover
 
-# This is only intended to run in Travis CI and requires goveralls to
-# be installed.
-ci-coveralls: tools deps
-	goveralls -service=travis-ci
-
-# Builds Relay on the current OS
-bin: clean-dev | $(BUILD_DIR)
-	CGO_ENABLED=0 build -ldflags "$(LINK_VARS)" -o $(BUILD_DIR)/$(BINARY)
+binary: clean-dev | $(BUILD_DIR)
+	CGO_ENABLED=0 go build -ldflags "$(LINK_VARS)" -o $(BUILD_DIR)/$(BINARY)
 
 docker:
 	docker build -t $(DOCKER_IMAGE) .

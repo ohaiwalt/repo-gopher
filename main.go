@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"net/http"
 	"os"
 	"strings"
 
@@ -13,8 +11,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/google/go-github/github"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Config holds TOML file data
@@ -29,17 +25,6 @@ type Label struct {
 	Color    string   `toml:"color"`
 	Mappings []string `toml:"mappings,omitempty"`
 	Delete   bool     `toml:"delete,omitempty"`
-}
-
-var (
-	requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "github_requests",
-		Help: "Number of GitHub API requests.",
-	})
-)
-
-func init() {
-	prometheus.MustRegister(requests)
 }
 
 func main() {
@@ -75,10 +60,6 @@ func main() {
 			}
 		}
 	}
-
-	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":8080", nil))
-
 }
 
 // Some ground rules:
@@ -97,45 +78,46 @@ func ensureLabel(ctx context.Context, repo string, label Label, gh *github.Clien
 	if err != nil {
 		return err
 	}
-	requests.Inc()
 
-	// delete ?!?
+	// Delete labels with the delete flag
 	if label.Delete && isLabelInSlice(label.Name, allLabels) {
 		resp, err := gh.Issues.DeleteLabel(ctx, owner, repo, label.Name)
 		if err != nil {
 			return github.CheckResponse(resp.Response)
 		}
-		requests.Inc()
+
 		fmt.Printf("Deleted label: %s\n", label.Name)
 		return nil
 	} else if label.Delete && !isLabelInSlice(label.Name, allLabels) {
 		return nil
 	}
 
+	// Create labels if they don't exist; otherwise make color match
 	if !isLabelInSlice(label.Name, allLabels) {
 		_, _, err := gh.Issues.CreateLabel(ctx, owner, repo,
 			&github.Label{Name: &label.Name, Color: &label.Color})
 		if err != nil {
 			return err
 		}
-		requests.Inc()
+
 		fmt.Println("Successfully added label.")
 	} else {
 		resp, _, err := gh.Issues.GetLabel(ctx, owner, repo, label.Name)
 		if err != nil {
 			return err
 		}
-		requests.Inc()
+
 		if resp.Color != &label.Color {
 			_, _, err := gh.Issues.EditLabel(ctx, owner, repo, label.Name,
 				&github.Label{Name: &label.Name, Color: &label.Color})
 			if err != nil {
 				return err
 			}
-			requests.Inc()
+
 		}
 	}
 
+	// Map new labels onto issues with old labels
 	for _, oldLabel := range mappings {
 		if isLabelInSlice(oldLabel, allLabels) {
 			fmt.Printf("Working on %s mapping for %s.\n", oldLabel, label.Name)
@@ -144,7 +126,6 @@ func ensureLabel(ctx context.Context, repo string, label Label, gh *github.Clien
 			if err != nil {
 				return err
 			}
-			requests.Inc()
 
 			if len(issues) > 0 {
 				for _, k := range issues {
@@ -155,24 +136,24 @@ func ensureLabel(ctx context.Context, repo string, label Label, gh *github.Clien
 					if err != nil {
 						return err
 					}
-					requests.Inc()
+
 					fmt.Printf("Removing label %s\n.", oldLabel)
 					_, err = gh.Issues.RemoveLabelForIssue(ctx, owner, repo, k.GetNumber(), oldLabel)
 					if err != nil {
 						return err
 					}
-					requests.Inc()
+
 					count++
 					fmt.Printf("-----\n")
 
 				}
 			}
 
+			// Check once more before deleting label
 			remaining, err := issuesWith(ctx, owner, repo, "label", oldLabel, gh)
 			if err != nil {
 				return err
 			}
-			requests.Inc()
 
 			if len(remaining) == 0 || len(remaining) == count {
 				fmt.Printf("Deleting label %s from %s.\n", oldLabel, repo)
@@ -180,7 +161,7 @@ func ensureLabel(ctx context.Context, repo string, label Label, gh *github.Clien
 				if err != nil {
 					return err
 				}
-				requests.Inc()
+
 			} else {
 				fmt.Printf("There are remaining issues returned from search - you should manually check that the %s label has no tickets assigned (or rerun this script in a few minutes time)\n", oldLabel)
 			}
