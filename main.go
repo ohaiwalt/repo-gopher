@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"golang.org/x/oauth2"
-
 	"github.com/BurntSushi/toml"
 	"github.com/google/go-github/github"
+	flag "github.com/spf13/pflag"
+	"golang.org/x/oauth2"
 )
 
 // Config holds TOML file data
@@ -29,8 +29,17 @@ type Label struct {
 
 func main() {
 
+	var configFile = flag.StringP("config", "c", "", "Path to configuration file")
+
+	flag.Parse()
+
+	// Set default config file
+	if *configFile == "" {
+		*configFile = "/etc/repo-gopher/config.toml"
+	}
+
 	// Load config file
-	tomlData, err := ioutil.ReadFile("config.toml")
+	tomlData, err := ioutil.ReadFile(*configFile)
 	if err != nil {
 		fmt.Println("Unable to load config file.")
 		os.Exit(1)
