@@ -30,6 +30,9 @@ binary: clean-dev | $(BUILD_DIR)
 docker:
 	docker build -t $(DOCKER_IMAGE) .
 
+docker-push:
+	docker push $(DOCKER_IMAGE)
+
 clean: clean-dev
 	rm -rf $(BUILD_DIR)
 	find . -name "*.test" -type f | xargs rm -fv
