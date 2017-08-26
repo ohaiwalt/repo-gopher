@@ -1,0 +1,36 @@
+repositories = [ "ohaiwalt/repo-gopher" ]
+
+[[label]]
+name = "bug"
+color = "f29513"
+mappings = [ "defect", "error" ]
+
+[[label]]
+name = "Jump In"
+color = "123456"
+
+[[label]]
+name = "deleteTest"
+color = "129513"
+delete = true
+
+[[label]]
+name = "Can't Touch This"
+color = "123456"
+mappings = [ "question", "wontfix" ]
+
+[[label]]
+name = "kind/feature"
+color = "f2f513"
+
+[[label]]
+name = "kind/bug"
+color = "f2f513"
+
+[[label]]
+name = "kind/beginner"
+color = "f2f513"
+
+[[label]]
+name = "kind/foo"
+color = "f2f513"
