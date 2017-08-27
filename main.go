@@ -64,7 +64,7 @@ func main() {
 			for _, label := range conf.Labels {
 				fmt.Printf("Working on label '%v' for %s.\n", label.Name, repo)
 				if err := ensureLabel(ctx, repo, label, client); err != nil {
-					fmt.Printf("Error, label '%v' on repository %s.\n    %v\n", label.Name, repo, err)
+					fmt.Printf("Error label '%v' on repository %s: %v\n", label.Name, repo, err)
 				}
 			}
 		}
@@ -82,8 +82,8 @@ func ensureLabel(ctx context.Context, repo string, label Label, gh *github.Clien
 	repo = splitRepo[1]
 	mappings := label.Mappings
 
-	opts := &github.ListOptions{}
-	allLabels, _, err := gh.Issues.ListLabels(ctx, owner, repo, opts)
+	// Get all labels in repository
+	allLabels, _, err := gh.Issues.ListLabels(ctx, owner, repo, &github.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -103,13 +103,19 @@ func ensureLabel(ctx context.Context, repo string, label Label, gh *github.Clien
 
 	// Create labels if they don't exist; otherwise make color match
 	if !isLabelInSlice(label.Name, allLabels) {
+		alreadyExistsError := false
 		_, _, err := gh.Issues.CreateLabel(ctx, owner, repo,
 			&github.Label{Name: &label.Name, Color: &label.Color})
-		if err != nil {
+		if err != nil && strings.Contains(err.Error(), "already_exists") {
+			alreadyExistsError = true
+		} else if err != nil {
 			return err
 		}
 
-		fmt.Println("Successfully added label.")
+		if alreadyExistsError == false {
+			fmt.Println("Successfully added label.")
+		}
+
 	} else {
 		resp, _, err := gh.Issues.GetLabel(ctx, owner, repo, label.Name)
 		if err != nil {
@@ -139,14 +145,14 @@ func ensureLabel(ctx context.Context, repo string, label Label, gh *github.Clien
 			if len(issues) > 0 {
 				for _, k := range issues {
 
-					fmt.Printf("Updating issue %d.\n", k.Number)
+					fmt.Printf("Updating issue %s/%s#%d.\n", owner, repo, k.GetNumber())
 					fmt.Printf("Adding label: %s.\n", label.Name)
 					_, _, err := gh.Issues.AddLabelsToIssue(ctx, owner, repo, k.GetNumber(), []string{label.Name})
 					if err != nil {
 						return err
 					}
 
-					fmt.Printf("Removing label %s\n.", oldLabel)
+					fmt.Printf("Removing label %s.\n", oldLabel)
 					_, err = gh.Issues.RemoveLabelForIssue(ctx, owner, repo, k.GetNumber(), oldLabel)
 					if err != nil {
 						return err

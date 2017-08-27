@@ -33,6 +33,9 @@ docker:
 docker-push:
 	docker push $(DOCKER_IMAGE)
 
+run:
+	docker run -v $(shell pwd)/examples/config.toml:/etc/repo-gopher/config.toml -e GITHUB_AUTH_TOKEN=$(GITHUB_AUTH_TOKEN) ohaiwalt/repo-gopher
+
 clean: clean-dev
 	rm -rf $(BUILD_DIR)
 	find . -name "*.test" -type f | xargs rm -fv
