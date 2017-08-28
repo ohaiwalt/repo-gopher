@@ -26,6 +26,12 @@
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
+  name = "github.com/spf13/pflag"
+  packages = ["."]
+  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
@@ -46,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "246504b44e57cea08a891f1e10641d55b6de2060945f2d436d31beff2797840b"
+  inputs-digest = "26c93b37b37c0eef73ade080e8eee1c06fec0210d4979cc642d2305618877346"
   solver-name = "gps-cdcl"
   solver-version = 1
