@@ -1,6 +1,8 @@
 Repo Gopher
 ============
 
+[![Build Status](https://travis-ci.org/ohaiwalt/repo-gopher.svg?branch=master)](https://travis-ci.org/ohaiwalt/repo-gopher)
+
 A utility for ensuring that a GitHub repository has the correct set of labels. The owner can create a toml file to configure a list of labels, and a list of mappings to rename older labels correctly.
 
 This tool is shamelessly ~ripped off~ ported from https://github.com/thommay/repo_man so I didn't have to mess around with running Ruby locally. All credit to the author.
